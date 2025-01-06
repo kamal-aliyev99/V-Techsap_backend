@@ -3,9 +3,12 @@ const urlNotFound = require("../middlewares/urlNotFound");
 const errorHandling = require("../middlewares/errorHandling");
 
 
-// R O U T E R S
+//   R O U T E R S     M O D U L E S
 
 const langRouter = require("./lang/lang_router");
+const staticImageRouter = require("./staticImage/staticImage_router")
+const settingRouter = require("./setting/setting_router")
+const staticTextRouter = require("./staticText/staticText_router")
 
 
 
@@ -14,7 +17,7 @@ const langRouter = require("./lang/lang_router");
 
 
 
-// EndPoints
+//   EndPoints
 
 router.get("/", (req,res) => {
     res.status(200).send("Success!!")
@@ -22,6 +25,11 @@ router.get("/", (req,res) => {
 
 router.use("/lang", langRouter);
 
+router.use("/staticImage", staticImageRouter);
+
+router.use("/setting", settingRouter);
+
+router.use("/staticText", staticTextRouter);
 
 
 
@@ -30,7 +38,9 @@ router.use("/lang", langRouter);
 
 
 
-// Middlewares
+
+
+//   Middlewares
 
 router.use(errorHandling);
 

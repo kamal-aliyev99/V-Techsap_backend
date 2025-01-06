@@ -1,37 +1,44 @@
-const langModel = require("../../models/lang/lang_model");
+const staticImageModel = require("../../models/staticImage/staticImage_model");
 const fileDelete = require("../../middlewares/fileDelete");
 
 const Joi = require("joi");
 const path = require("path");
 
-const langInsertSchema = Joi.object({
-    langCode: Joi.string().max(3).required(),
-    name: Joi.string().max(50).required(),
+const staticImageInsertSchema = Joi.object({
+    key: Joi.string().max(255).required(),
     image: Joi.string().allow(null)
 })
 
-const langUpdateSchema = langInsertSchema.concat(
+const staticImageUpdateSchema = staticImageInsertSchema.concat(
     Joi.object({
         id: Joi.number().positive().required()
     })
 );
 
+const getDatasByArraySchema = Joi.array()
+  .items(
+    Joi.string().max(255).required() 
+  )
+  .min(1)
+  .required();
+
+
 module.exports = {
-    getLangs,
-    getLangByID,
-    addLang,
-    updateLang,
-    deleteLang
+    getStaticImages,
+    getStaticImageByKeyorID,
+    getStaticImagesByKeysArray,
+    addStaticImage,
+    updateStaticImage,
+    deleteStaticImage
 }
 
 
+//      G E T    A L L    S T A T I C   I M A G E S
 
-//      G E T    A L L    L A N G U A G E S
-
-function getLangs (req, res, next) {
-    langModel.getLangs()
-        .then(langs => { 
-            res.status(200).json(langs);
+function getStaticImages (req, res, next) {
+    staticImageModel.getStaticImages()  
+        .then(staticImages => {
+            res.status(200).json(staticImages);
         })
         .catch(error => {
             next(
@@ -47,20 +54,25 @@ function getLangs (req, res, next) {
 
 
 
-//      G E T    L A N G   b y   I D
+//      G E T    S T A T I C   I M A G E   b y   ID / Key 
 
-function getLangByID (req, res, next) {
-    const {id} = req.params;
+function getStaticImageByKeyorID (req, res, next) {
+    const {keyOrID} = req.params;
 
-    langModel.getLangByID(id)
-        .then(lang => {
-            if (lang) {
-                res.status(200).json(lang);
+    const modelFunction = 
+    isNaN(Number(keyOrID)) ?
+    "getStaticImageByKey" :
+    "getStaticImageByID" 
+
+    staticImageModel[modelFunction](keyOrID)
+        .then(staticImage => {
+            if (staticImage) {
+                res.status(200).json(staticImage);
             } else {
                 next(
                     {
                         statusCode: 404,
-                        message: "Language Not Found",
+                        message: "The staticImage Not Found",
                     }
                 )
             }
@@ -78,21 +90,74 @@ function getLangByID (req, res, next) {
 
 
 
+//      G E T    S T A T I C   I M A G E s   b y   Keys (array)
 
-//      A D D    L A N G
+function getStaticImagesByKeysArray (req, res, next) {
+    const keysArr = req.body;
+    
+    const {error} = getDatasByArraySchema.validate(keysArr, {abortEarly: false})
 
-function addLang (req, res, next) {   
-    const formData = req.body;
+    if (error) {
+        const errors = error.details.map(err => ({  
+            field: err.context.key,
+            message: err.message
+        }));
+
+        next({
+            statusCode: 400,
+            message: "Bad Request: The server could not understand the request because of invalid syntax.",
+            errors
+        }) 
+    } else {
+        staticImageModel.getStaticImagesByKeysArray(keysArr)
+        .then(datas => {
+            if (datas.length) {
+                const datasObject = datas.reduce((obj, item) => {
+                    return {
+                        ...obj,
+                        [item.key]: item.image
+                    }
+                }, {})                
+                res.status(200).json(datasObject);
+            } else {
+                next(
+                    {
+                        statusCode: 404,
+                        message: "The datas Not Found",
+                    }
+                )
+            }
+        })
+        .catch(error => {
+            next(
+                {
+                    statusCode: 500,
+                    message: "Internal Server Error",
+                    error
+                }
+            )
+        })
+    }
+}
+//  NOTE::  arraydaki herhansi key DB'da yoxdusa neticede sadece hemin key uygun netice gelmeyecek
+
+
+
+
+//      A D D    S T A T I C   I M A G E
+
+function addStaticImage (req, res, next) {   
+    const formData = {...req.body};
     const file = req.file;
     const filePath = file ? 
     `${req.protocol}://${req.get('host')}/${path.posix.join(...file.path.split(path.sep))}` 
     : null;
-    const newLang = {
+    const newStaticImage = {
         ...formData,
         image: filePath
     }    
     
-    const {error} = langInsertSchema.validate(newLang, {abortEarly: false})    
+    const {error} = staticImageInsertSchema.validate(newStaticImage, {abortEarly: false})    
     
     if (error) {
         filePath && fileDelete(filePath);  // insert ugurlu olmasa sekil yuklenmesin,, silsin
@@ -108,28 +173,28 @@ function addLang (req, res, next) {
         })  
         
     } else {
-        langModel.getLangByLangCode(newLang.langCode)
+        staticImageModel.getStaticImageByKey(newStaticImage.key)
             .then(data => {
                 if (data) {
                     filePath && fileDelete(filePath);
                     next({
                         statusCode: 409,  // Conflict
-                        message: `'${newLang.langCode}' langCode already exist`,
+                        message: `'${newStaticImage.key}' - staticImage already exist`,
                         data
                     })
                 } else {
-                    langModel.addLang(newLang)
-                        .then(addedLang => {
+                    staticImageModel.addStaticImage(newStaticImage)
+                        .then(addedStaticImage => {
                             res.status(201).json({
-                                message: "Language successfully inserted",
-                                data: addedLang
+                                message: "StaticImage successfully inserted",
+                                data: addedStaticImage
                             });
                         })
                         .catch(error => {
                             filePath && fileDelete(filePath);
                             next({
                                 statusCode: 500,
-                                message: "An error occurred while adding language",
+                                message: "An error occurred while adding staticImage",
                                 error
                             })
                         })
@@ -139,7 +204,7 @@ function addLang (req, res, next) {
                 filePath && fileDelete(filePath);
                 next({
                     statusCode: 500,
-                    message: "Unexpected error occurred while adding language",
+                    message: "Unexpected error occurred while adding staticImage",
                     error
                 })
             })
@@ -149,9 +214,9 @@ function addLang (req, res, next) {
 
 
 
-//      U P D A T E    L A N G
+//      U P D A T E    S T A T I C   I M A G E       
 
-function updateLang (req, res, next) {
+function updateStaticImage (req, res, next) {
     const {id} = req.params;
     const formData = {...req.body};
 
@@ -162,21 +227,20 @@ function updateLang (req, res, next) {
     const file = req.file;
     const filePath = file ? 
     `${req.protocol}://${req.get('host')}/${path.posix.join(...file.path.split(path.sep))}` 
-    : null;    
+    : null;
 
     let editData;
 
     if (filePath) {
         editData = {...formData, image: filePath}
     } else {
-        editData = {...formData}
+        editData = {...formData}; 
         if (formData.image !== null) {
             Reflect.deleteProperty(editData, "image");
         }
     }    
-
     
-    const {error} = langUpdateSchema.validate(editData, {abortEarly: false}) 
+    const {error} = staticImageUpdateSchema.validate(editData, {abortEarly: false})   
 
     if (error) {
         filePath && fileDelete(filePath);
@@ -192,21 +256,21 @@ function updateLang (req, res, next) {
         })  
         
     } else {
-        langModel.getLangByID(id)
+        staticImageModel.getStaticImageByID(id)
             .then(data => {
                 if (data) {
-                    langModel.updateLang(id, editData)
+                    staticImageModel.updateStaticImage(id, editData)
                         .then(updatedData => {                            
                             Reflect.has(editData, "image") && data.image &&
                             fileDelete(data.image);
 
-                            res.status(200).json({ message: "Lang updated successfully", data: updatedData });
+                            res.status(200).json({ message: "StaticImage updated successfully", data: updatedData });
                         })
                         .catch(error => {
                             filePath && fileDelete(filePath);
                             next({
                                 statusCode: 500,
-                                message: "Internal Server Error: An error occurred while updating language",
+                                message: "Internal Server Error: An error occurred while updating staticImage",
                                 error
                             })
                         })
@@ -214,7 +278,7 @@ function updateLang (req, res, next) {
                     filePath && fileDelete(filePath);
                     next({
                         statusCode: 404,
-                        message: "The language not found"
+                        message: "The staticImage not found"
                     })
                 }
             })
@@ -222,7 +286,7 @@ function updateLang (req, res, next) {
                 filePath && fileDelete(filePath);
                 next({
                     statusCode: 500,
-                    message: "Internal Server Error: Unexpected occurred while updating language",
+                    message: "Internal Server Error: Unexpected occurred while updating staticImage",
                     error
                 })
             })
@@ -232,33 +296,33 @@ function updateLang (req, res, next) {
 
 
 
-//      D E L E T E    L A N G
+//      D E L E T E    S T A T I C   I M A G E
 
-function deleteLang (req, res, next) {
+function deleteStaticImage (req, res, next) {
     const {id} = req.params;
     let imagePath;
 
-    langModel.getLangByID(id)
+    staticImageModel.getStaticImageByID(id)
         .then(data => {
-            if (data) {
+            if (data) {                
                 imagePath = data.image || null;
 
-                langModel.deleteLang(id)
-                    .then(deletedCount => {
+                staticImageModel.deleteStaticImage(id)
+                    .then((deletedCount) => {                        
                         if (deletedCount) {
                             imagePath && fileDelete(imagePath);
                             res.status(204).end();
                         } else {
                             next({
                                 statusCode: 500,
-                                message: "Internal Server Error: An error occurred while deleting language"
+                                message: "Internal Server Error: An error occurred while deleting staticImage"
                             })
                         }
                     }) 
                     .catch(error => {
                         next({
                             statusCode: 500,
-                            message: "Internal Server Error: Unexpected occurred while deleting language",
+                            message: "Internal Server Error: Unexpected occurred while deleting staticImage",
                             error
                         })
                     })
@@ -266,7 +330,7 @@ function deleteLang (req, res, next) {
             } else {
                 next({
                     statusCode: 404,
-                    message: "The language not found"
+                    message: "The staticImage not found"
                 })
             }
         })
