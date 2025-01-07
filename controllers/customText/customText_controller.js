@@ -180,7 +180,7 @@ function getCustomTextsByKeysArray (req, res, next) {
 
 function addCustomText (req, res, next) {   
     const formData = {...req.body};
-    // formData.translation = JSON.parse(formData.translation)
+    formData.translation = JSON.parse(formData.translation)
     const {translation, ...customTextData} = formData;
     
     const {error} = customTextInsertSchema.validate(formData, {abortEarly: false})    

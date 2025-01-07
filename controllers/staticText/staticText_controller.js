@@ -180,7 +180,7 @@ function getStaticTextsByKeysArray (req, res, next) {
 
 function addStaticText (req, res, next) {   
     const formData = {...req.body};
-    // formData.translation = JSON.parse(formData.translation)  //  comment this code for postman
+    formData.translation = JSON.parse(formData.translation)  //  comment this code for postman
     const {translation, ...staticTextData} = formData;
         
     const {error} = staticTextInsertSchema.validate(formData, {abortEarly: false})    
