@@ -13,9 +13,9 @@ const settingController = require("../../controllers/setting/setting_controller"
 
 router.get("/", settingController.getSettings);
 
-router.get("/:keyOrID", settingController.getSettingByKeyOrID);
+router.post("/getDatas", settingController.getSettingsByKeysArray);  // getDatas is special keyword,, key can't be "getDatas !!!"
 
-router.post("/getDatas", settingController.getSettingsByKeysArray);
+router.get("/:keyOrID", settingController.getSettingByKeyOrID);
 
 router.post("/", upload.none(), settingController.addSetting);
 

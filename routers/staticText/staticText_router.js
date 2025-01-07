@@ -13,6 +13,8 @@ const staticTextController = require("../../controllers/staticText/staticText_co
 
 router.get("/", staticTextController.getStaticTexts);
 
+router.post("/getDatas", staticTextController.getStaticTextsByKeysArray);
+
 router.get("/:keyOrID", staticTextController.getStaticTextByKeyOrID);
 
 router.post("/", upload.none(), staticTextController.addStaticText);

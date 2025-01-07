@@ -8,6 +8,7 @@ module.exports = {
     getStaticTextTranslationsByID,
     getStaticTextByKey,
     getStaticTextByKeyWithLang,
+    getStaticTextsByKeysArrayWithLang,
     addStaticText,
     updateStaticText,
     deleteStaticText
@@ -99,6 +100,23 @@ function getStaticTextByKeyWithLang (key, lang) {
         .where("lang.langCode", lang)
         .andWhere("staticText.key", key)
         .first()
+}
+
+
+//      Get Data by Keys array - with Lang
+
+function getStaticTextsByKeysArrayWithLang (keysArr, lang) {
+    return db("staticText_translation")
+        .join("lang", "staticText_translation.langCode", "lang.langCode")
+        .join("staticText", "staticText_translation.staticText_id", "staticText.id")
+        .select(
+            "staticText.*", 
+            "staticText_translation.value", 
+            "staticText_translation.id as translationID", 
+            "lang.langCode"
+        )
+        .where("lang.langCode", lang)
+        .whereIn("staticText.key", keysArr)
 }
 
 

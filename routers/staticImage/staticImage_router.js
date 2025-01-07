@@ -12,9 +12,9 @@ const staticImageController = require("../../controllers/staticImage/staticImage
 
 router.get("/", staticImageController.getStaticImages);
 
-router.get("/:keyOrID", staticImageController.getStaticImageByKeyorID);
-
 router.post("/getDatas", staticImageController.getStaticImagesByKeysArray);
+
+router.get("/:keyOrID", staticImageController.getStaticImageByKeyorID);
 
 router.post("/", upload("static-Images").single("image"), staticImageController.addStaticImage);  
 

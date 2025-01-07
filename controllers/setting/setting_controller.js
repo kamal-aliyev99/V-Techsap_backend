@@ -1,8 +1,6 @@
 const settingModel = require("../../models/setting/setting_model");
-// const fileDelete = require("../../middlewares/fileDelete");
 
 const Joi = require("joi");
-// const path = require("path");
 
 const settingInsertSchema = Joi.object({
     key: Joi.string().max(255).required(),

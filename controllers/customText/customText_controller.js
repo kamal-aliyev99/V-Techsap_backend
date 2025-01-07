@@ -1,9 +1,9 @@
-const staticTextModel = require("../../models/staticText/staticText_model");
+const customTextModel = require("../../models/customText/customText_model");
 const langModel = require("../../models/lang/lang_model");
 
 const Joi = require("joi");
 
-const staticTextInsertSchema = Joi.object({
+const customTextInsertSchema = Joi.object({
     key: Joi.string().max(255).required(),
     translation: Joi.array()
         .items(
@@ -16,7 +16,7 @@ const staticTextInsertSchema = Joi.object({
         .required()
 });
 
-const staticTextUpdateSchema = Joi.object({
+const customTextUpdateSchema = Joi.object({
     id: Joi.number().positive().required(),
     key: Joi.string().max(255).required(),
     value: Joi.string().max(255).required(),
@@ -34,23 +34,23 @@ const getDatasByArraySchema = Joi.array()
 const defaultLang = "en";
 
 module.exports = {
-    getStaticTexts,
-    getStaticTextByKeyOrID,
-    getStaticTextsByKeysArray,
-    addStaticText,
-    updateStaticText,
-    deleteStaticText
+    getCustomTexts,
+    getCustomTextByKeyOrID,
+    getCustomTextsByKeysArray,
+    addCustomText,
+    updateCustomText,
+    deleteCustomText
 }
 
 
-//      G E T    A L L    Static Text
+//      G E T    A L L    customTexts
 
-function getStaticTexts (req, res, next) {
-    const lang = req.query.lang || defaultLang;    
+function getCustomTexts (req, res, next) {
+    const lang = req.query.lang ||defaultLang;    
 
-    staticTextModel.getStaticTextsWithLang(lang)  
-        .then(staticTexts => {
-            res.status(200).json(staticTexts);
+    customTextModel.getCustomTextsWithLang(lang)  
+        .then(customTexts => {
+            res.status(200).json(customTexts);
         })
         .catch(error => {
             next(
@@ -66,25 +66,25 @@ function getStaticTexts (req, res, next) {
 
 
 
-//      G E T    Static Text   b y   I D  /  K E Y
+//      G E T    customText   b y   I D  /  K E Y
 
-function getStaticTextByKeyOrID (req, res, next) {
+function getCustomTextByKeyOrID (req, res, next) {
     const param = req.params.keyOrID;
     const lang = req.query.lang || defaultLang;
     const isParamNaN = isNaN(Number(param))
 
     const modelFunction = 
     isParamNaN ?
-    "getStaticTextByKeyWithLang" :
-    "getStaticTextByIDWithLang" 
+    "getCustomTextByKeyWithLang" :
+    "getCustomTextByIDWithLang" 
 
-    staticTextModel[modelFunction](param, lang)
-        .then(staticText => {
-            if (staticText) {
-                res.status(200).json(staticText);
+    customTextModel[modelFunction](param, lang)
+        .then(customText => {
+            if (customText) {
+                res.status(200).json(customText);
             } else {
                 if (!isParamNaN) {
-                    staticTextModel.getStaticTextByID(param)
+                    customTextModel.getCustomTextByID(param)
                         .then(data => {
                             if (data) {
                                 res.status(200).json(data);
@@ -92,7 +92,7 @@ function getStaticTextByKeyOrID (req, res, next) {
                                 next(
                                     {
                                         statusCode: 404,
-                                        message: "The staticText Not Found",
+                                        message: "The customText Not Found",
                                     }
                                 )
                             }
@@ -101,7 +101,7 @@ function getStaticTextByKeyOrID (req, res, next) {
                     next(
                         {
                             statusCode: 404,
-                            message: "The staticText Not Found",
+                            message: "The customText Not Found",
                         }
                     )
                 }
@@ -121,9 +121,9 @@ function getStaticTextByKeyOrID (req, res, next) {
 
 
 
-//      G E T    StaticTexts   b y   Keys (array)
+//      G E T    CustomTexts   b y   Keys (array)
 
-function getStaticTextsByKeysArray (req, res, next) {
+function getCustomTextsByKeysArray (req, res, next) {
     const keysArr = req.body;
     const lang = req.query.lang || defaultLang;
     
@@ -141,7 +141,7 @@ function getStaticTextsByKeysArray (req, res, next) {
             errors
         }) 
     } else {
-        staticTextModel.getStaticTextsByKeysArrayWithLang(keysArr, lang)
+        customTextModel.getCustomTextsByKeysArrayWithLang(keysArr, lang)
         .then(datas => {
             if (datas.length) {
                 const datasObject = datas.reduce((obj, item) => {
@@ -176,14 +176,14 @@ function getStaticTextsByKeysArray (req, res, next) {
 
 
 
-//      A D D    S t a t i c    T e x t
+//      A D D    customText
 
-function addStaticText (req, res, next) {   
+function addCustomText (req, res, next) {   
     const formData = {...req.body};
-    // formData.translation = JSON.parse(formData.translation)  //  comment this code for postman
-    const {translation, ...staticTextData} = formData;
-        
-    const {error} = staticTextInsertSchema.validate(formData, {abortEarly: false})    
+    // formData.translation = JSON.parse(formData.translation)
+    const {translation, ...customTextData} = formData;
+    
+    const {error} = customTextInsertSchema.validate(formData, {abortEarly: false})    
     
     if (error) {
         const errors = error?.details?.map(err => ({  // error sebebi
@@ -198,7 +198,7 @@ function addStaticText (req, res, next) {
         })  
         
     } else {
-        staticTextModel.getStaticTextByKey(formData.key)
+        customTextModel.getCustomTextByKey(formData.key)
             .then(data => {
                 if (data) {
                     next({
@@ -215,22 +215,22 @@ function addStaticText (req, res, next) {
                                 if (!exists) {
                                     translation.push({
                                         langCode: lang.langCode,
-                                        value: staticTextData.key
+                                        value: customTextData.key
                                     });
                                 }
                             });
                             
-                            staticTextModel.addStaticText(staticTextData, translation)
+                            customTextModel.addCustomText(customTextData, translation)
                                 .then(id => {
                                     res.status(201).json({
-                                        message: "StaticText successfully inserted",
+                                        message: "CustomText successfully inserted",
                                         data: {id}
                                     })
                                 })
                                 .catch(error => {
                                     next({
                                         statusCode: 500,
-                                        message: "An error occurred while adding StaticText",
+                                        message: "An error occurred while adding customText",
                                         error
                                     })
                                 })                            
@@ -240,39 +240,39 @@ function addStaticText (req, res, next) {
             .catch(error => {
                 next({
                     statusCode: 500,
-                    message: "Unexpected error occurred while adding StaticText",
+                    message: "Unexpected error occurred while adding customText",
                     error
                 })
             })
     }
 }
 
-//  ~~EXAMPLE~~  Add StaticText - request body:
+//  ~~EXAMPLE~~  Add customText - request body:
 
 // const exampleAddData = {
-//     key: "home-page",   // same as en.value
+//     key: "homeBanner-3",  
 
 //     translation: [
-//         {langCode: "en", value: "Home page"},  
-//         {langCode: "az", value: "Ana sehife"}
+//         {langCode: "en", value: "3. homeBanner descriptionn"},  
+//         {langCode: "az", value: "3. homeBanner haqqindaaaa"}
 //     ]
 // }
 
 
 
 
-//      U P D A T E    Static Text
+//      U P D A T E    customText
 
-function updateStaticText (req, res, next) {
+function updateCustomText (req, res, next) {
     const {id} = req.params;
     const formData = {...req.body};
 
-    const {id: staticTextID, key, value, translationID, langCode} = formData,
-    staticTextData = { id: staticTextID, key },
-    translationData = {id: translationID, staticText_id: id, value, langCode};
+    const {id: customTextID, key, value, translationID, langCode} = formData,
+    customTextData = { id: customTextID, key },
+    translationData = {id: translationID, customText_id: id, value, langCode};
 
     
-    const {error} = staticTextUpdateSchema.validate(formData, {abortEarly: false})   
+    const {error} = customTextUpdateSchema.validate(formData, {abortEarly: false})   
 
 
     if (error) {
@@ -288,75 +288,74 @@ function updateStaticText (req, res, next) {
         })  
         
     } else {
-        staticTextModel.getStaticTextByID(id)
+        customTextModel.getCustomTextByID(id)
             .then(data => {
                 if (data) {
-                    staticTextModel.updateStaticText(id, staticTextData, translationData)
+                    customTextModel.updateCustomText(id, customTextData, translationData)
                         .then(() => {
                             res.status(200).json({
-                                message: "StaticText updated successfully"
+                                message: "CustomText updated successfully"
                             })
                         })
                         .catch(error => {
                             next({
                                 statusCode: 500,
-                                message: "Internal Server Error: An error occurred while updating staticText",
+                                message: "Internal Server Error: An error occurred while updating customText",
                                 error
                             })
                         })
                 } else {
                     next({
                         statusCode: 404,
-                        message: "The staticText not found"
+                        message: "The customText not found"
                     })
                 }
             })
             .catch(error => {
                 next({
                     statusCode: 500,
-                    message: "Internal Server Error: Unexpected occurred while updating staticText",
+                    message: "Internal Server Error: Unexpected occurred while updating customText",
                     error
                 })
             })
     }
 }
 
-//  ~~EXAMPLE~~  Add StaticText - request body:
+//  ~~EXAMPLE~~  Update customText - request body:
 
 // const exampleUpdateData = {
-//     id : 10,
-//     key : "about-us",
-//     value : "Haqqimizda",
-//     translationID : 6,
-//     langCode: "az"  // optional, if there isn't that lang translation 
+//     id: 2,
+//     key: "homeBanner-2",
+//     value: "2. homeBanner descriptionn",
+//     translationID: 4,
+//     langCode: "en"
 // }
 
 
 
+//      D E L E T E    customText
 
-//      D E L E T E    Static Text
-
-function deleteStaticText (req, res, next) {
+function deleteCustomText (req, res, next) {
     const {id} = req.params;
 
-    staticTextModel.getStaticTextByID(id)
+    customTextModel.getCustomTextByID(id)
         .then(data => {
             if (data) {
-                staticTextModel.deleteStaticText(id)
+                customTextModel.deleteCustomText(id)
                     .then(deletedCount => {
                         if (deletedCount) {
                             res.status(204).end();
                         } else {
                             next({
                                 statusCode: 500,
-                                message: "Internal Server Error: An error occurred while deleting staticText"
+                                message: "Internal Server Error: An error occurred while deleting customText"
                             })
                         }
                     }) 
                     .catch(error => {
                         next({
                             statusCode: 500,
-                            message: "Internal Server Error: Unexpected occurred while deleting staticText",
+                            message: "Internal Server Error: Unexpected occurred while deleting customText",
                             error
                         })
                     })
@@ -364,14 +363,14 @@ function deleteStaticText (req, res, next) {
             } else {
                 next({
                     statusCode: 404,
-                    message: "The staticText not found"
+                    message: "The customText not found"
                 })
             }
         })
         .catch(error => {
             next({
                 statusCode: 500,
-                message: "Internal Server Error: Unexpected occurred while deleting staticText",
+                message: "Internal Server Error: Unexpected occurred while deleting customText",
                 error
             })
         })
