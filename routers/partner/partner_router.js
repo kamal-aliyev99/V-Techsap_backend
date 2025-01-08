@@ -12,7 +12,7 @@ const partnerController = require("../../controllers/partner/partner_controller"
 
 router.get("/", partnerController.getPartners);
 
-router.get("/:id", partnerController.getStaticImageByID);
+router.get("/:id", partnerController.getPartnerByID);
 
 router.post("/", upload("partner-images").single("image"), partnerController.addPartner);  
 

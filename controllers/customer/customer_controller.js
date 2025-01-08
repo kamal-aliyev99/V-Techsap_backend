@@ -1,35 +1,37 @@
-const partnerModel = require("../../models/partner/partner_model");
+const customerModel = require("../../models/customer/customer_model");
 const fileDelete = require("../../middlewares/fileDelete");
 
 const Joi = require("joi");
 const path = require("path");
 
-const partnerInsertSchema = Joi.object({
+const customerInsertSchema = Joi.object({
     title: Joi.string().max(255),
-    image: Joi.string().allow(null)
+    image: Joi.string().allow(null),
+    showHomePage: Joi.boolean().valid(true, false)
 })
 
-const partnerUpdateSchema = partnerInsertSchema.concat(
+const customerUpdateSchema = customerInsertSchema.concat(
     Joi.object({
         id: Joi.number().positive().required()
     })
 );
 
 module.exports = {
-    getPartners,
-    getPartnerByID,
-    addPartner,
-    updatePartner,
-    deletePartner
+    getCustomers,
+    getHomePageCustomers,
+    getCustomerByID,
+    addCustomer,
+    updateCustomer,
+    deleteCustomer
 }
 
 
-//      G E T    A L L    P A R T N E R S
+//      G E T    A L L    C U S T O M E R S
 
-function getPartners (req, res, next) {
-    partnerModel.getPartners()  
-        .then(partners => {
-            res.status(200).json(partners);
+function getCustomers (req, res, next) {
+    customerModel.getCustomers()  
+        .then(data => {
+            res.status(200).json(data);
         })
         .catch(error => {
             next(
@@ -45,20 +47,44 @@ function getPartners (req, res, next) {
 
 
 
-//      G E T    P A R T N E R   b y   I D
+//      G E T    C U S T O M E R S   at  HomePage
 
-function getPartnerByID (req, res, next) {
+function getHomePageCustomers (req, res, next) {
+    const limitParam = req.query.limit; 
+    const limit = !isNaN(+limitParam) && limitParam > 0 ? limitParam : null
+
+    customerModel.getHomePageCustomers(limit)
+        .then(data => {
+            res.status(200).json(data);
+        })
+        .catch(error => {
+            next(
+                {
+                    statusCode: 500,
+                    message: "Internal Server Error",
+                    error
+                }
+            )
+        })
+}
+
+
+
+
+//      G E T    C U S T O M E R   b y   I D
+
+function getCustomerByID (req, res, next) {
     const {id} = req.params;
 
-    partnerModel.getPartnerByID(id)
-        .then(partner => {
-            if (partner) {
-                res.status(200).json(partner);
+    customerModel.getCustomerByID(id)
+        .then(data => {
+            if (data) {
+                res.status(200).json(data);
             } else {
                 next(
                     {
                         statusCode: 404,
-                        message: "The partner Not Found",
+                        message: "The customer Not Found",
                     }
                 )
             }
@@ -77,20 +103,20 @@ function getPartnerByID (req, res, next) {
 
 
 
-//      A D D    P A R T N E R
+//      A D D    C U S T O M E R
 
-function addPartner (req, res, next) {   
+function addCustomer (req, res, next) {   
     const formData = {...req.body};
     const file = req.file;
     const filePath = file ? 
     `${req.protocol}://${req.get('host')}/${path.posix.join(...file.path.split(path.sep))}` 
     : null;
-    const newPartner = {
+    const newCustomer = {
         ...formData,    
         image: filePath
     } 
     
-    const {error} = partnerInsertSchema.validate(newPartner, {abortEarly: false})    
+    const {error} = customerInsertSchema.validate(newCustomer, {abortEarly: false})    
     
     if (error) {
         filePath && fileDelete(filePath);  // insert ugurlu olmasa sekil yuklenmesin,, silsin
@@ -106,18 +132,18 @@ function addPartner (req, res, next) {
         })  
         
     } else {
-        partnerModel.addPartner(newPartner)
-            .then(addedPartner => {
+        customerModel.addCustomer(newCustomer)
+            .then(addedCustomer => {
                 res.status(201).json({
-                    message: "Partner successfully inserted",
-                    data: addedPartner
+                    message: "Customer successfully inserted",
+                    data: addedCustomer
                 });
             })
             .catch(error => {
                 filePath && fileDelete(filePath);
                 next({
                     statusCode: 500,
-                    message: "An error occurred while adding partner",
+                    message: "An error occurred while adding customer",
                     error
                 })
             })
@@ -127,9 +153,9 @@ function addPartner (req, res, next) {
 
 
 
-//      U P D A T E    P A R T N E R      
+//      U P D A T E    C U S T O M E R      
 
-function updatePartner (req, res, next) {
+function updateCustomer (req, res, next) {
     const {id} = req.params;
     const formData = {...req.body};
 
@@ -153,7 +179,7 @@ function updatePartner (req, res, next) {
         }
     }    
     
-    const {error} = partnerUpdateSchema.validate(editData, {abortEarly: false})   
+    const {error} = customerUpdateSchema.validate(editData, {abortEarly: false})   
 
     if (error) {
         filePath && fileDelete(filePath);
@@ -169,21 +195,21 @@ function updatePartner (req, res, next) {
         })  
         
     } else {
-        partnerModel.getPartnerByID(id)
+        customerModel.getCustomerByID(id)
             .then(data => {
                 if (data) {
-                    partnerModel.updatePartner(id, editData)
+                    customerModel.updateCustomer(id, editData)
                         .then(updatedData => {                            
                             Reflect.has(editData, "image") && data.image &&
                             fileDelete(data.image);
 
-                            res.status(200).json({ message: "Partner updated successfully", data: updatedData });
+                            res.status(200).json({ message: "Customer updated successfully", data: updatedData });
                         })
                         .catch(error => {
                             filePath && fileDelete(filePath);
                             next({
                                 statusCode: 500,
-                                message: "Internal Server Error: An error occurred while updating partner",
+                                message: "Internal Server Error: An error occurred while updating customer",
                                 error
                             })
                         })
@@ -191,7 +217,7 @@ function updatePartner (req, res, next) {
                     filePath && fileDelete(filePath);
                     next({
                         statusCode: 404,
-                        message: "The partner not found"
+                        message: "The customer not found"
                     })
                 }
             })
@@ -199,7 +225,7 @@ function updatePartner (req, res, next) {
                 filePath && fileDelete(filePath);
                 next({
                     statusCode: 500,
-                    message: "Internal Server Error: Unexpected occurred while updating partner",
+                    message: "Internal Server Error: Unexpected occurred while updating customer",
                     error
                 })
             })
@@ -209,18 +235,18 @@ function updatePartner (req, res, next) {
 
 
 
-//      D E L E T E    P A R T N E R
+//      D E L E T E    C U S T O M E R
 
-function deletePartner (req, res, next) {
+function deleteCustomer (req, res, next) {
     const {id} = req.params;
     let imagePath;
 
-    partnerModel.getPartnerByID(id)
+    customerModel.getCustomerByID(id)
         .then(data => {
             if (data) {                
                 imagePath = data.image || null;
 
-                partnerModel.deletePartner(id)
+                customerModel.deleteCustomer(id)
                     .then((deletedCount) => {                        
                         if (deletedCount) {
                             imagePath && fileDelete(imagePath);
@@ -228,14 +254,14 @@ function deletePartner (req, res, next) {
                         } else {
                             next({
                                 statusCode: 500,
-                                message: "Internal Server Error: An error occurred while deleting partner"
+                                message: "Internal Server Error: An error occurred while deleting customer"
                             })
                         }
                     }) 
                     .catch(error => {
                         next({
                             statusCode: 500,
-                            message: "Internal Server Error: Unexpected occurred while deleting partner",
+                            message: "Internal Server Error: Unexpected occurred while deleting customer",
                             error
                         })
                     })
@@ -243,14 +269,14 @@ function deletePartner (req, res, next) {
             } else {
                 next({
                     statusCode: 404,
-                    message: "The partner not found"
+                    message: "The customer not found"
                 })
             }
         })
         .catch(error => {
             next({
                 statusCode: 500,
-                message: "Internal Server Error: Unexpected occurred while deleting partner",
+                message: "Internal Server Error: Unexpected occurred while deleting customer",
                 error
             })
         })
