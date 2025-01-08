@@ -11,6 +11,7 @@ const settingRouter = require("./setting/setting_router")
 const staticTextRouter = require("./staticText/staticText_router")
 const customTextRouter = require("./customText/customText_router")
 const partnerRouter = require("./partner/partner_router")
+const ourValuesRouter = require("./ourValues/ourValues_router")
 
 
 
@@ -37,6 +38,7 @@ router.use("/customText", customTextRouter);
 
 router.use("/partner", partnerRouter);
 
+router.use("/ourValues", ourValuesRouter);
 
 
 
