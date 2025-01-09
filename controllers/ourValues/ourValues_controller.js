@@ -238,11 +238,6 @@ function updateOurValues(req, res, next) {
     ourValuesData = {id: ourValuesID, slug, image},
     translationData = {id: translationID, ourValues_id: id, langCode, title, desc}; 
 
-    console.log(req.body.id);
-    
-    
-    
-
     if (filePath) {
         ourValuesData.image = filePath
     } else {

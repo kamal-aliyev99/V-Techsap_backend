@@ -51,7 +51,7 @@ function getCustomers (req, res, next) {
 
 function getHomePageCustomers (req, res, next) {
     const limitParam = req.query.limit; 
-    const limit = !isNaN(+limitParam) && limitParam > 0 ? limitParam : null
+    const limit = !isNaN(+limitParam) && limitParam > 0 ? +limitParam : null
 
     customerModel.getHomePageCustomers(limit)
         .then(data => {
