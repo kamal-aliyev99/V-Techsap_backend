@@ -14,6 +14,7 @@ const partnerRouter = require("./partner/partner_router")
 const ourValuesRouter = require("./ourValues/ourValues_router")
 const customerRouter = require("./customer/customer_router")
 const teamRouter = require("./team/team_router")
+const serviceRouter = require("./service/service_router")
 
 
 
@@ -45,6 +46,11 @@ router.use("/ourValues", ourValuesRouter);
 router.use("/customer", customerRouter);
 
 router.use("/team", teamRouter);
+
+router.use("/service", serviceRouter);
+
+
+
 
 
 
