@@ -6,7 +6,7 @@ exports.up = function(knex) {
     return knex.schema
       .createTable("team", table => {
           table.increments("id").primary();
-          table.string("linkedin").notNullable();
+          table.string("linkedin").notNullable();   // remove notNullable  !!!
           table.text("image");
       })
   };

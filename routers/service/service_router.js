@@ -12,16 +12,19 @@ const serviceController = require("../../controllers/service/service_controller"
 
 router.get("/", serviceController.getServices);
 
-// router.get("/:slugOrID", serviceController.getServiceBySlugOrID);
+router.get("/:slugOrID", serviceController.getServiceBySlugOrID);
 
 router.post("/", upload("service-images").fields([
     { name: "image", maxCount: 1 },
     { name: "benefitImage", maxCount: 1 }
 ]), serviceController.addService);  
 
-// router.patch("/:id", checkUpdateIDMiddleware, upload("service-images").single("image"), serviceController.updateService);
+router.patch("/:id", upload("service-images").fields([
+    { name: "image", maxCount: 1 },
+    { name: "benefitImage", maxCount: 1 }
+]), checkUpdateIDMiddleware, serviceController.updateService);
 
-// router.delete("/:id", serviceController.deleteService);  
+router.delete("/:id", serviceController.deleteService);  
 
 
 

@@ -45,7 +45,7 @@ module.exports = {
 //      Get all Team
 
 function getTeam (req, res, next) {
-    const {langCode, limit: limitParam, start: startParam} = req.query;
+    const {lang: langCode, limit: limitParam, start: startParam} = req.query;
     const limit = !isNaN(+limitParam) && limitParam > 0 ? +limitParam : null;
     const start = !isNaN(+startParam) && startParam > 0 ? +startParam : null;
     const lang = langCode || defaultLang;    

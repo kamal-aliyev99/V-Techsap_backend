@@ -20,7 +20,7 @@ server.use("/api", mainRouter);
 const PORT = process.env.PORT || 3080   // 80-http ; 443 - https
 const HOST = process.env.HOST || '0.0.0.0'; // Host təyini, əks halda bütün interfeysləri dinləyəcək
 server.listen(PORT, HOST, () => {
-    PORT ? console.log("http://localhost:3080 is ready") : 
+    PORT == 3080 ? console.log("http://localhost:3080 is ready") : 
     console.log(`Server is running on port ${PORT}`);  
 })
 
