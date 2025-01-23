@@ -5,6 +5,8 @@ const multer = require("multer");
 const upload = multer();
 const checkUpdateIDMiddleware = require("../../middlewares/CheckUpdateID")
 const staticTextController = require("../../controllers/staticText/staticText_controller")
+const authenticateToken = require("../../middlewares/authenticateToken")
+const checkAdmin = require("../../middlewares/checkAdmin")
 
 
 
@@ -17,11 +19,11 @@ router.post("/getDatas", staticTextController.getStaticTextsByKeysArray);
 
 router.get("/:keyOrID", staticTextController.getStaticTextByKeyOrID);
 
-router.post("/", upload.none(), staticTextController.addStaticText);
+router.post("/", authenticateToken, checkAdmin, upload.none(), staticTextController.addStaticText);
 
-router.patch("/:id", upload.none(), checkUpdateIDMiddleware, staticTextController.updateStaticText);
+router.patch("/:id", authenticateToken, checkAdmin, upload.none(), checkUpdateIDMiddleware, staticTextController.updateStaticText);
 
-router.delete("/:id", staticTextController.deleteStaticText);
+router.delete("/:id", authenticateToken, checkAdmin, staticTextController.deleteStaticText);
 
 
 

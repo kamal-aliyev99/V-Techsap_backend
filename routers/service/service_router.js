@@ -4,6 +4,8 @@ const router = require("express").Router();
 const upload = require("../../middlewares/fileUpload"); 
 const checkUpdateIDMiddleware = require("../../middlewares/CheckUpdateID")
 const serviceController = require("../../controllers/service/service_controller");
+const authenticateToken = require("../../middlewares/authenticateToken")
+const checkAdmin = require("../../middlewares/checkAdmin")
 
 
 
@@ -14,17 +16,17 @@ router.get("/", serviceController.getServices);
 
 router.get("/:slugOrID", serviceController.getServiceBySlugOrID);
 
-router.post("/", upload("service-images").fields([
+router.post("/", authenticateToken, checkAdmin, upload("service-images").fields([
     { name: "image", maxCount: 1 },
     { name: "benefitImage", maxCount: 1 }
 ]), serviceController.addService);  
 
-router.patch("/:id", upload("service-images").fields([
+router.patch("/:id", authenticateToken, checkAdmin, upload("service-images").fields([
     { name: "image", maxCount: 1 },
     { name: "benefitImage", maxCount: 1 }
 ]), checkUpdateIDMiddleware, serviceController.updateService);
 
-router.delete("/:id", serviceController.deleteService);  
+router.delete("/:id", authenticateToken, checkAdmin, serviceController.deleteService);  
 
 
 

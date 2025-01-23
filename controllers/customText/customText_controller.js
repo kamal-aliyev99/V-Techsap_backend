@@ -9,7 +9,7 @@ const customTextInsertSchema = Joi.object({
         .items(
             Joi.object({
                 langCode: Joi.string().max(10).required(),
-                value: Joi.string().max(255).required() 
+                value: Joi.string().required() 
             })
         )
         .min(1) // arrayda min 1 obj olmalidi - for key
@@ -19,7 +19,7 @@ const customTextInsertSchema = Joi.object({
 const customTextUpdateSchema = Joi.object({
     id: Joi.number().positive().required(),
     key: Joi.string().max(255).required(),
-    value: Joi.string().max(255).required(),
+    value: Joi.string().required(),
     translationID: Joi.number().positive(),  
     langCode: Joi.string().max(10)
 })

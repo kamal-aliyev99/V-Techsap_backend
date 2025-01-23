@@ -4,9 +4,15 @@ const express = require("express");
 const server = express();
 const cors = require("cors");
 const path = require("path");
+require('dotenv').config();
+const cookieParser = require("cookie-parser"); 
 
-server.use(cors());
+server.use(cors({
+    // origin: "http://localhost:3000", 
+    credentials: true // Cookie göndərilməsi üçün 
+}));
 server.use(express.json());
+server.use(cookieParser());
 server.use('/public', express.static(path.join(__dirname, 'public')));
 
 

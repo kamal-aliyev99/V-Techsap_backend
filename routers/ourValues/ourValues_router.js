@@ -4,6 +4,8 @@ const router = require("express").Router();
 const upload = require("../../middlewares/fileUpload"); 
 const checkUpdateIDMiddleware = require("../../middlewares/CheckUpdateID")
 const ourValuesController = require("../../controllers/ourValues/ourValues_controller");
+const authenticateToken = require("../../middlewares/authenticateToken")
+const checkAdmin = require("../../middlewares/checkAdmin")
 
 
 
@@ -14,11 +16,11 @@ router.get("/", ourValuesController.getOurValues);
 
 router.get("/:slugOrID", ourValuesController.getOurValuesBySlugOrID);
 
-router.post("/", upload("ourValues-images").single("image"), ourValuesController.addOurValues);   
+router.post("/", authenticateToken, checkAdmin, upload("ourValues-images").single("image"), ourValuesController.addOurValues);   
 
-router.patch("/:id", upload("ourValues-images").single("image"), checkUpdateIDMiddleware, ourValuesController.updateOurValues);
+router.patch("/:id", authenticateToken, checkAdmin, upload("ourValues-images").single("image"), checkUpdateIDMiddleware, ourValuesController.updateOurValues);
 
-router.delete("/:id", ourValuesController.deleteOurValues);
+router.delete("/:id", authenticateToken, checkAdmin, ourValuesController.deleteOurValues);
 
 
 module.exports = router

@@ -5,6 +5,8 @@ const multer = require("multer");
 const upload = multer();
 const checkUpdateIDMiddleware = require("../../middlewares/CheckUpdateID")
 const settingController = require("../../controllers/setting/setting_controller")
+const authenticateToken = require("../../middlewares/authenticateToken")
+const checkAdmin = require("../../middlewares/checkAdmin")
 
 
 
@@ -17,11 +19,11 @@ router.post("/getDatas", settingController.getSettingsByKeysArray);  // getDatas
 
 router.get("/:keyOrID", settingController.getSettingByKeyOrID);
 
-router.post("/", upload.none(), settingController.addSetting);
+router.post("/", authenticateToken, checkAdmin, upload.none(), settingController.addSetting);
 
-router.patch("/:id", upload.none(), checkUpdateIDMiddleware, settingController.updateSetting);
+router.patch("/:id", authenticateToken, checkAdmin, upload.none(), checkUpdateIDMiddleware, settingController.updateSetting);
 
-router.delete("/:id", settingController.deleteSetting);
+router.delete("/:id", authenticateToken, checkAdmin, settingController.deleteSetting);
 
 
 
