@@ -8,7 +8,7 @@ require('dotenv').config();
 const cookieParser = require("cookie-parser"); 
 
 server.use(cors({
-    // origin: "http://localhost:3000", 
+    origin: "http://localhost:3000", 
     credentials: true // Cookie göndərilməsi üçün 
 }));
 server.use(express.json());

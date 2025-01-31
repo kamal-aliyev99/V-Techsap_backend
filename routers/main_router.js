@@ -17,6 +17,7 @@ const teamRouter = require("./team/team_router")
 const serviceRouter = require("./service/service_router")
 const contactBaseRouter = require("./contactBase/contactBase_router")
 const userRouter = require("./user/user_router")
+const pagesSeoRouter = require("./pagesSeo/pagesSeo_router")
 
 
 
@@ -55,6 +56,7 @@ router.use("/contactBase", contactBaseRouter);
 
 router.use("/auth", userRouter);
 
+router.use("/pagesSeo", pagesSeoRouter); 
 
 
 
