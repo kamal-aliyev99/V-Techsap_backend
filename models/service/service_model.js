@@ -81,7 +81,7 @@ async function getServiceByIDWithLang (id, lang) {
         .andWhere("lang.langCode", lang)  
         .first() 
 
-    const serviceSpecs = await db("serviceSpecs_translation")  // xeta yaradir, where olmayanda isdiyir
+    const serviceSpecs = await db("serviceSpecs_translation")  
         .join("lang", "serviceSpecs_translation.langCode", "lang.langCode")
         .join("serviceSpecs", "serviceSpecs_translation.serviceSpecs_id", "serviceSpecs.id")
         .select(
@@ -163,7 +163,7 @@ async function getServiceBySlugWithLang(slug, lang) {
         .andWhere("lang.langCode", lang)  
         .first() 
 
-    const serviceSpecs = await db("serviceSpecs_translation")  // xeta yaradir, where olmayanda isdiyir
+    const serviceSpecs = await db("serviceSpecs_translation")  
         .join("lang", "serviceSpecs_translation.langCode", "lang.langCode")
         .join("serviceSpecs", "serviceSpecs_translation.serviceSpecs_id", "serviceSpecs.id")
         .select(

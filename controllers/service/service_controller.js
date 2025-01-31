@@ -9,6 +9,9 @@ const serviceInsertSchema = Joi.object({
     slug: Joi.string().max(255).required(),
     image: Joi.string().allow(null),
     benefitImage: Joi.string().allow(null),
+    seoTitle: Joi.string().max(255).allow(null, ""),
+    seoDesc: Joi.string().allow(null, ""),
+    seoKeywords: Joi.string().allow(null, ""),
     translation: Joi.array()
         .items(
             Joi.object({
@@ -58,6 +61,9 @@ const serviceUpdateSchema = Joi.object({
     slug: Joi.string().max(255),
     image: Joi.string().allow(null),
     benefitImage: Joi.string().allow(null),
+    seoTitle: Joi.string().max(255).allow(null, ""),
+    seoDesc: Joi.string().allow(null, ""),
+    seoKeywords: Joi.string().allow(null, ""),
     translationID: Joi.number().positive(),
     langCode: Joi.string().max(10),
     title: Joi.string().max(255).required(),
@@ -409,6 +415,9 @@ function updateService(req, res, next) {
         slug: formData.slug,
         image: formData.image, 
         benefitImage: formData.benefitImage,
+        seoTitle: formData.seoTitle,
+        seoDesc: formData.seoDesc,
+        seoKeywords: formData.seoKeywords,
     }
 
     const translationData = {
@@ -469,11 +478,8 @@ function updateService(req, res, next) {
 
 
 
-    console.log(formData);
+    // console.log(formData);
     
-
-    // res.status(200).json({a: 5})
-
 
 
     const {error} = serviceUpdateSchema.validate(formData, {abortEarly: false})   
@@ -493,9 +499,6 @@ function updateService(req, res, next) {
         })  
         
     } else {
-// res.status(200).json({a: 5})
-
-
         serviceModel.getServiceByID(id)
             .then(data => {
                 if (data) {
